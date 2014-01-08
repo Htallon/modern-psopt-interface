@@ -1,0 +1,50 @@
+ModernPsoptInterface
+
+Copyright 2014 Markus Sauermann
+
+ModernPsoptInterface is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+ModernPsoptInterface is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with ModernPsoptInterface.  If not, see
+<http://www.gnu.org/licenses/>.
+
+
+
+This software provides a modernized interface for PSOPT.
+
+
+
+Installation:
+
+Currently the installation works out of the box for Windows with
+MinGW.
+
+On Windows follow the instructions of
+https://github.com/Sauermann/psopt-installer
+
+Using a MSYS shell for installation do:
+
+make PSOPT=$DIRECTORY_OF_PSOPT_INSTALLATION
+make install PREFIX=$DIRECTORY_OF_PSOPT_INSTALLATION/.target
+
+where you replace $DIRECTORY_OF_PSOPT_INSTALLATION by the installation
+directory of PSOPT.
+
+
+
+If you are not using the installer, be aware that the following
+patches to PSOPT are mandatory:
+
+https://github.com/Sauermann/psopt-installer/blob/master/patches/psopt-c%2B%2B0x-windows.patch
+https://github.com/Sauermann/psopt-installer/blob/master/patches/psopt-lambdafunction-windows.patch
+https://github.com/Sauermann/psopt-installer/blob/master/patches/psopt-bugfix-static-variable.patch
+
+and you will have to adjust the makefile accordingly.
