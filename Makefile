@@ -1,4 +1,4 @@
-all: ModernPsoptInterface.a
+all: libModernPsoptInterface.a
 
 TARGET := ModernPsoptInterface
 
@@ -8,12 +8,12 @@ CXXFLAGSEXTRA = -std=c++0x -pedantic
 
 include $(PSOPT)/Makefile_include.mk
 
-install: ModernPsoptInterface.a
-	cp ModernPsoptInterface.a $(PREFIX)/lib/
+install: libModernPsoptInterface.a
+	cp libModernPsoptInterface.a $(PREFIX)/lib/
 	cp ModernPsoptInterface.h $(PREFIX)/include/
 
 ModernPsoptInterface.a: ModernPsoptInterface.o
 	ar rcs  $@ $^
 
 projectclean:
-	rm -f ModernPsoptInterface.a
+	rm -f libModernPsoptInterface.a
