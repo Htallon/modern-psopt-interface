@@ -1,4 +1,7 @@
-/i.bat
+*~
+/.settings/
 /.cproject
 /.project
-/.settings/
+/*.a
+/*.o
+/i.sh
