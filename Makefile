@@ -12,7 +12,7 @@ install: libModernPsoptInterface.a
 	cp libModernPsoptInterface.a $(PREFIX)/lib/
 	cp ModernPsoptInterface.h $(PREFIX)/include/
 
-ModernPsoptInterface.a: ModernPsoptInterface.o
+libModernPsoptInterface.a: ModernPsoptInterface.o
 	ar rcs  $@ $^
 
 projectclean:
