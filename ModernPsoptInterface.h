@@ -26,7 +26,9 @@
 
 #include <psopt.h>
 
-namespace ModernPsoptInterface {
+
+namespace ModernPsoptInterfaceNamespace {
+
 
 class ModernPsoptInterfaceException : public exception
 {
@@ -244,6 +246,9 @@ public:
 	void Psopt(string name, string outfilename, int nlinkages, AlgoConfigStruct algoConfig);
 	void plot_win(DMatrix& theta, DMatrix& r, string title, string xlabel, string ylabel, string legend, string terminal, string output, bool show = true);
 	ResultVectors getResults();
+	vector<adouble> getEndTimesOfPhases();
+
 };
+
 
 } // end namespace

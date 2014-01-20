@@ -21,7 +21,8 @@
 
 #include "ModernPsoptInterface.h"
 
-namespace ModernPsoptInterface {
+
+namespace ModernPsoptInterfaceNamespace {
 
 
 // CONSTRUCTOR
@@ -644,5 +645,16 @@ ResultVectors ModernPsoptInterface::getResults()
 	res.u = u;
 	return res;
 }
+
+vector<adouble> ModernPsoptInterface::getEndTimesOfPhases()
+{
+	vector<adouble> res;
+	for (int p=1;p<=problem.nphases;p++) {
+		DMatrix pt = solution.get_time_in_phase(p);
+		res.push_back(pt(1, pt.GetNoCols()));
+	}
+	return res;
+}
+
 
 } // end namespace
