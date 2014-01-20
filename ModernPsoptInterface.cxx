@@ -21,6 +21,8 @@
 
 #include "ModernPsoptInterface.h"
 
+namespace ModernPsoptInterface {
+
 
 // CONSTRUCTOR
 
@@ -556,14 +558,12 @@ void ModernPsoptInterface::AlgoSetup(AlgoConfigStruct algoConfig)
 	algorithm.scaling = algoConfig.scaling;
 	algorithm.nlp_tolerance = algoConfig.nlpTolerance;
 }
-void bbb(){}
 void ModernPsoptInterface::FunctionSetup()
 {
 	problem.dae = [this] (adouble* derivatives, adouble* path, adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase) -> void
 	{
 		// init function
 		if (daeInitFunction) {
-			bbb();
 			daeInitFunction(derivatives, path, states, controls, parameters, time, xad, iphase);
 		}
 		// derivatives
@@ -644,3 +644,5 @@ ResultVectors ModernPsoptInterface::getResults()
 	res.u = u;
 	return res;
 }
+
+} // end namespace

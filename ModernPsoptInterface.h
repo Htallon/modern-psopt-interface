@@ -26,6 +26,8 @@
 
 #include <psopt.h>
 
+namespace ModernPsoptInterface {
+
 class ModernPsoptInterfaceException : public exception
 {
 private:
@@ -244,3 +246,4 @@ public:
 	ResultVectors getResults();
 };
 
+} // end namespace
