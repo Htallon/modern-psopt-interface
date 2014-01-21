@@ -21,15 +21,24 @@
 
 #include "ModernPsoptInterface.h"
 
+#include <psopt.h>
 
-namespace ModernPsoptInterfaceNamespace {
+namespace PsoptInterface {
 
+struct ModernPsoptInterface::PsoptDatStruct {
+	Alg  algorithm;
+	Sol  solution;
+	Prob problem;
+};
 
 // CONSTRUCTOR
 
-ModernPsoptInterface::ModernPsoptInterface()
+ModernPsoptInterface::ModernPsoptInterface():
+		psoptData(new PsoptDatStruct())
 {
 }
+
+ModernPsoptInterface::~ModernPsoptInterface() {}
 
 // DEFAULT FUNCTIONS
 
@@ -360,95 +369,95 @@ void ModernPsoptInterface::Psopt(string name, string outfilename, int nlinkages,
 	AlgoSetup(algoConfig);
 	FunctionSetup();
 	prePsoptFunction();
-	psopt(solution, problem, algorithm);
+	psopt(psoptData->solution, psoptData->problem, psoptData->algorithm);
 }
 void ModernPsoptInterface::prePsoptFunction()
 {
 	if (!display) return;
-	cout << "linkages " << problem.nlinkages << endl;
-	cout << "phases " << problem.nphases << endl;
-	for (int i=1;i<= problem.nphases; i++) {
+	cout << "linkages " << psoptData->problem.nlinkages << endl;
+	cout << "phases " << psoptData->problem.nphases << endl;
+	for (int i=1;i<= psoptData->problem.nphases; i++) {
 		cout << "Phase " << i << endl;
-		problem.phase[i-1].nodes.Print("Nodes");
+		psoptData->problem.phase[i-1].nodes.Print("Nodes");
 		if (displayTimes) {
-			cout << problem.phase[i-1].bounds.lower.StartTime << " < Time Begin < " << problem.phase[i-1].bounds.upper.StartTime << endl;
-			cout << problem.phase[i-1].bounds.lower.EndTime << " < Time End < " << problem.phase[i-1].bounds.upper.EndTime << endl;
-			problem.phase[i-1].guess.time.Print("Time Guess");
+			cout << psoptData->problem.phase[i-1].bounds.lower.StartTime << " < Time Begin < " << psoptData->problem.phase[i-1].bounds.upper.StartTime << endl;
+			cout << psoptData->problem.phase[i-1].bounds.lower.EndTime << " < Time End < " << psoptData->problem.phase[i-1].bounds.upper.EndTime << endl;
+			psoptData->problem.phase[i-1].guess.time.Print("Time Guess");
 		}
-		cout << "States " << problem.phase[i-1].nstates << endl;
+		cout << "States " << psoptData->problem.phase[i-1].nstates << endl;
 		if (displayStates) {
-			problem.phase[i-1].bounds.lower.states.Print("Lower States");
-			problem.phase[i-1].bounds.upper.states.Print("Upper States");
-			problem.phase[i-1].guess.states.Print("State Guess");
+			psoptData->problem.phase[i-1].bounds.lower.states.Print("Lower States");
+			psoptData->problem.phase[i-1].bounds.upper.states.Print("Upper States");
+			psoptData->problem.phase[i-1].guess.states.Print("State Guess");
 		}
-		cout << "Controls " << problem.phase[i-1].ncontrols << endl;
+		cout << "Controls " << psoptData->problem.phase[i-1].ncontrols << endl;
 		if (displayControls) {
-			problem.phase[i-1].bounds.lower.controls.Print("Lower Controls");
-			problem.phase[i-1].bounds.upper.controls.Print("Upper Controls");
-			problem.phase[i-1].guess.controls.Print("Control Guess");
+			psoptData->problem.phase[i-1].bounds.lower.controls.Print("Lower Controls");
+			psoptData->problem.phase[i-1].bounds.upper.controls.Print("Upper Controls");
+			psoptData->problem.phase[i-1].guess.controls.Print("Control Guess");
 		}
-		cout << "Events " << problem.phase[i-1].nevents << endl;
+		cout << "Events " << psoptData->problem.phase[i-1].nevents << endl;
 		if (displayEvents) {
-			problem.phase[i-1].bounds.lower.events.Print("Lower Events");
-			problem.phase[i-1].bounds.upper.events.Print("Upper Events");
+			psoptData->problem.phase[i-1].bounds.lower.events.Print("Lower Events");
+			psoptData->problem.phase[i-1].bounds.upper.events.Print("Upper Events");
 		}
-		cout << "Paths " << problem.phase[i-1].npath << endl;
+		cout << "Paths " << psoptData->problem.phase[i-1].npath << endl;
 		if (displayPaths) {
-			problem.phase[i-1].bounds.lower.path.Print("Lower Path");
-			problem.phase[i-1].bounds.upper.path.Print("Upper Path");
+			psoptData->problem.phase[i-1].bounds.lower.path.Print("Lower Path");
+			psoptData->problem.phase[i-1].bounds.upper.path.Print("Upper Path");
 		}
 	}
 }
 
 void ModernPsoptInterface::Level1Setup(string name, string outfilename, int nlinkages)
 {
-	problem.name = name;
-	problem.outfilename = outfilename;
-	problem.nphases = max(stateContainer.size(), controlContainer.size());
-	problem.nlinkages = nlinkages;
-	psopt_level1_setup(problem);
+	psoptData->problem.name = name;
+	psoptData->problem.outfilename = outfilename;
+	psoptData->problem.nphases = max(stateContainer.size(), controlContainer.size());
+	psoptData->problem.nlinkages = nlinkages;
+	psopt_level1_setup(psoptData->problem);
 }
 void ModernPsoptInterface::Level2Setup()
 {
-	for (int phase = 1; phase <= problem.nphases; phase++)
+	for (int phase = 1; phase <= psoptData->problem.nphases; phase++)
 	{
 		Level2SetupPhase(phase);
 	}
-	psopt_level2_setup(problem, algorithm);
+	psopt_level2_setup(psoptData->problem, psoptData->algorithm);
 }
 void ModernPsoptInterface::Level2SetupPhase(int phase)
 {
 	if (phase <= (int)stateContainer.size()) {
-		problem.phases(phase).nstates = stateContainer[phase-1].p.size();
+		psoptData->problem.phases(phase).nstates = stateContainer[phase-1].p.size();
 		cout << "setting states in phase " << phase << " to " << stateContainer[phase-1].p.size() << endl;
 	} else {
 		string err = "There are no states in phase ";
 		err += phase;
-		throw ModernPsoptInterfaceException(err);
+		throw PsoptInterfaceException(err);
 	}
 	if (phase <= (int)controlContainer.size()) {
-		problem.phases(phase).ncontrols = controlContainer[phase-1].p.size();
+		psoptData->problem.phases(phase).ncontrols = controlContainer[phase-1].p.size();
 		cout << "setting controls in phase " << phase << " to " << controlContainer[phase-1].p.size() << endl;
 	}
 	if (phase > (int)timeContainer.size()) {
 		string err = "There are no time bounds in phase ";
 		err += phase;
-		throw ModernPsoptInterfaceException(err);
+		throw PsoptInterfaceException(err);
 	}
 	if (phase <= (int)eventContainer.size()) {
-		problem.phases(phase).nevents = eventContainer[phase-1].size();
+		psoptData->problem.phases(phase).nevents = eventContainer[phase-1].size();
 		cout << "setting events in phase " << phase << " to " << eventContainer[phase-1].size() << endl;
 	} else {
-		problem.phases(phase).nevents = 0;
+		psoptData->problem.phases(phase).nevents = 0;
 	}
 		if (phase <= (int)pathContainer.size()) {
-			problem.phases(phase).npath = pathContainer[phase-1].size();
+			psoptData->problem.phases(phase).npath = pathContainer[phase-1].size();
 		}
-	problem.phases(phase).nodes = nodesConfig.c_str();
+		psoptData->problem.phases(phase).nodes = nodesConfig.c_str();
 }
 void ModernPsoptInterface::Level3Setup()
 {
-	for (int phase = 1; phase <= problem.nphases; phase++)
+	for (int phase = 1; phase <= psoptData->problem.nphases; phase++)
 	{
 		int statesInPhase = stateContainer[phase-1].p.size();
 		int controlsInPhase;
@@ -469,12 +478,12 @@ void ModernPsoptInterface::Level3Setup()
 		} catch (const out_of_range& e) {
 			pathsInPhase = 0;
 		}
-		int nodesInPhase = problem.phases(phase).nodes(1,1);
+		int nodesInPhase = psoptData->problem.phases(phase).nodes(1,1);
 		cout << "nodes in phase " << phase << " : " << nodesInPhase;
 		// State Constraints
 		for (int state = 1; state <= statesInPhase; state++) {
-			problem.phases(phase).bounds.lower.states(state) = stateContainer[phase-1].p[state-1].lowerBound;
-			problem.phases(phase).bounds.upper.states(state) = stateContainer[phase-1].p[state-1].upperBound;
+			psoptData->problem.phases(phase).bounds.lower.states(state) = stateContainer[phase-1].p[state-1].lowerBound;
+			psoptData->problem.phases(phase).bounds.upper.states(state) = stateContainer[phase-1].p[state-1].upperBound;
 //			cout << "state constraint " << state << " lo: " << problem.phases(phase).bounds.lower.states(state) << endl;
 //			cout << "state constraint " << state << " up: " << problem.phases(phase).bounds.upper.states(state) << endl;
 		}
@@ -487,12 +496,12 @@ void ModernPsoptInterface::Level3Setup()
 					xGuess(state, colon()) = GuessToDMatrix(stateContainer[phase-1].p[state-1].guess, nodesInPhase);
 				}
 			}
-			problem.phases(phase).guess.states = xGuess;
+			psoptData->problem.phases(phase).guess.states = xGuess;
 		}
 		// Control Constraints
 		for (int control = 1; control <= controlsInPhase; control++) {
-			problem.phases(phase).bounds.lower.controls(control) = controlContainer[phase-1].p[control-1].lowerBound;
-			problem.phases(phase).bounds.upper.controls(control) = controlContainer[phase-1].p[control-1].upperBound;
+			psoptData->problem.phases(phase).bounds.lower.controls(control) = controlContainer[phase-1].p[control-1].lowerBound;
+			psoptData->problem.phases(phase).bounds.upper.controls(control) = controlContainer[phase-1].p[control-1].upperBound;
 //			cout << "control constraint " << control << " lo: " << problem.phases(phase).bounds.lower.controls(control) << endl;
 //			cout << "control constraint " << control << " up: " << problem.phases(phase).bounds.upper.controls(control) << endl;
 		}
@@ -504,30 +513,30 @@ void ModernPsoptInterface::Level3Setup()
 					uGuess(control, colon()) = GuessToDMatrix(controlContainer[phase-1].p[control-1].guess, nodesInPhase);
 				}
 			}
-			problem.phases(phase).guess.controls = uGuess;
+			psoptData->problem.phases(phase).guess.controls = uGuess;
 		}
 		// Event Constraints
 		for (int event = 1; event <= eventsInPhase; event++) {
-			problem.phases(phase).bounds.lower.events(event) = eventContainer[phase-1][event-1].lowerBound;
-			problem.phases(phase).bounds.upper.events(event) = eventContainer[phase-1][event-1].upperBound;
+			psoptData->problem.phases(phase).bounds.lower.events(event) = eventContainer[phase-1][event-1].lowerBound;
+			psoptData->problem.phases(phase).bounds.upper.events(event) = eventContainer[phase-1][event-1].upperBound;
 //			cout << "event constraint " << event << " lo: " << problem.phases(phase).bounds.lower.events(event) << endl;
 //			cout << "event constraint " << event << " up: " << problem.phases(phase).bounds.upper.events(event) << endl;
 		}
 		// Path Constraints
 		for (int path = 1; path <= pathsInPhase; path++) {
-			problem.phases(phase).bounds.lower.path(path) = pathContainer[phase-1][path-1].lowerBound;
-			problem.phases(phase).bounds.upper.path(path) = pathContainer[phase-1][path-1].upperBound;
+			psoptData->problem.phases(phase).bounds.lower.path(path) = pathContainer[phase-1][path-1].lowerBound;
+			psoptData->problem.phases(phase).bounds.upper.path(path) = pathContainer[phase-1][path-1].upperBound;
 
 		}
 		// Time Constraints
-		problem.phases(phase).bounds.lower.StartTime = timeContainer[phase-1].beginLower;
-		problem.phases(phase).bounds.upper.StartTime = timeContainer[phase-1].beginUpper;
-		problem.phases(phase).bounds.lower.EndTime = timeContainer[phase-1].endLower;
-		problem.phases(phase).bounds.upper.EndTime = timeContainer[phase-1].endUpper;
+		psoptData->problem.phases(phase).bounds.lower.StartTime = timeContainer[phase-1].beginLower;
+		psoptData->problem.phases(phase).bounds.upper.StartTime = timeContainer[phase-1].beginUpper;
+		psoptData->problem.phases(phase).bounds.lower.EndTime = timeContainer[phase-1].endLower;
+		psoptData->problem.phases(phase).bounds.upper.EndTime = timeContainer[phase-1].endUpper;
 		if (timeContainer[phase-1].guessMade) {
-			problem.phases(phase).guess.time = GuessToDMatrix(timeContainer[phase-1].guess, nodesInPhase);
+			psoptData->problem.phases(phase).guess.time = GuessToDMatrix(timeContainer[phase-1].guess, nodesInPhase);
 		} else {
-			problem.phases(phase).guess.time = linspace(
+			psoptData->problem.phases(phase).guess.time = linspace(
 					(timeContainer[phase-1].beginUpper + timeContainer[phase-1].beginLower) / 2,
 					(timeContainer[phase-1].endUpper >= INF) ? timeContainer[phase-1].endLower : (timeContainer[phase-1].endUpper + timeContainer[phase-1].endLower)/2,
 							nodesInPhase);
@@ -552,23 +561,23 @@ DMatrix ModernPsoptInterface::GuessToDMatrix(GuessStruct guess, int nodes)
 }
 void ModernPsoptInterface::AlgoSetup(AlgoConfigStruct algoConfig)
 {
-	algorithm.derivatives = algoConfig.derivatives;
-	algorithm.nlp_iter_max = algoConfig.nlpIterMax;
-	algorithm.nlp_method = algoConfig.nlpMethod;
-	algorithm.ode_tolerance = algoConfig.odeTolerance;
-	algorithm.scaling = algoConfig.scaling;
-	algorithm.nlp_tolerance = algoConfig.nlpTolerance;
+	psoptData->algorithm.derivatives = algoConfig.derivatives;
+	psoptData->algorithm.nlp_iter_max = algoConfig.nlpIterMax;
+	psoptData->algorithm.nlp_method = algoConfig.nlpMethod;
+	psoptData->algorithm.ode_tolerance = algoConfig.odeTolerance;
+	psoptData->algorithm.scaling = algoConfig.scaling;
+	psoptData->algorithm.nlp_tolerance = algoConfig.nlpTolerance;
 }
 void ModernPsoptInterface::FunctionSetup()
 {
-	problem.dae = [this] (adouble* derivatives, adouble* path, adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase) -> void
+	psoptData->problem.dae = [this] (adouble* derivatives, adouble* path, adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase) -> void
 	{
 		// init function
 		if (daeInitFunction) {
 			daeInitFunction(derivatives, path, states, controls, parameters, time, xad, iphase);
 		}
 		// derivatives
-		for (int state = 0;state < problem.phases(iphase).nstates; state++) {
+		for (int state = 0;state < psoptData->problem.phases(iphase).nstates; state++) {
 			if (stateContainer[iphase-1].p[state].functionType == FunNoArgs) {
 				//cout << "no";
 				derivatives[state] = stateContainer[iphase-1].p[state].derivationFunctionNoArgs();
@@ -578,26 +587,26 @@ void ModernPsoptInterface::FunctionSetup()
 			}
 		}
 		// paths
-		for (int path = 0;path < problem.phases(iphase).npath;path++) {
+		for (int path = 0;path < psoptData->problem.phases(iphase).npath;path++) {
 			if (pathContainer[iphase-1][path].functionType == FunWithArgs) {
 				pathContainer[iphase-1][path].pathFunctionWithArgs(states, controls, parameters, time, xad);
 			} else if (pathContainer[iphase-1][path].functionType == FunNoArgs) {
-				throw ModernPsoptInterfaceException("Unimplemented phasesNoArgsFunction");
+				throw PsoptInterfaceException("Unimplemented phasesNoArgsFunction");
 			}
 		}
 	};
-	problem.linkages = [this] (adouble* linkages, adouble* xad) -> void
+	psoptData->problem.linkages = [this] (adouble* linkages, adouble* xad) -> void
 	{
 		if (linkagesInitFunction) {
 			linkagesInitFunction(linkages, xad);
 		}
 	};
-	problem.events = [this] (adouble* e, adouble* initial_states, adouble* final_states, adouble* parameters, adouble& t0, adouble& tf, adouble* xad, int iphase) -> void
+	psoptData->problem.events = [this] (adouble* e, adouble* initial_states, adouble* final_states, adouble* parameters, adouble& t0, adouble& tf, adouble* xad, int iphase) -> void
 	{
 		if (eventInitFunction) {
 			eventInitFunction(e, initial_states, final_states, parameters, t0, tf, xad, iphase);
 		}
-		for (int event = 0; event< problem.phases(iphase).nevents; event++) {
+		for (int event = 0; event< psoptData->problem.phases(iphase).nevents; event++) {
 			if (eventContainer[iphase-1][event].functionType == FunNoArgs) {
 				e[event] = eventContainer[iphase-1][event].eventFunctionNoArgs();
 			} else if (eventContainer[iphase-1][event].functionType == FunWithArgs) {
@@ -606,13 +615,13 @@ void ModernPsoptInterface::FunctionSetup()
 		}
 	};
 	if (endpointCostFunction) {
-		problem.endpoint_cost = [this] (adouble* initial_states, adouble* final_states, adouble* parameters, adouble& t0, adouble& tf, adouble* xad, int iphase) -> adouble
+		psoptData->problem.endpoint_cost = [this] (adouble* initial_states, adouble* final_states, adouble* parameters, adouble& t0, adouble& tf, adouble* xad, int iphase) -> adouble
 				{
 			return endpointCostFunction(initial_states, final_states, parameters, t0, tf, xad, iphase);
 				};
 	};
 	if (integrandCostFunction) {
-		problem.integrand_cost = [this] (adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase) -> adouble
+		psoptData->problem.integrand_cost = [this] (adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase) -> adouble
 				{
 			return integrandCostFunction(states, controls, parameters, time, xad, iphase);
 				};
@@ -630,14 +639,14 @@ void ModernPsoptInterface::plot_win(DMatrix& theta, DMatrix& r, string title, st
 
 ResultVectors ModernPsoptInterface::getResults()
 {
-	DMatrix u = solution.get_controls_in_phase(1);
-	DMatrix x = solution.get_states_in_phase  (1);
-	DMatrix t = solution.get_time_in_phase    (1);
+	DMatrix u = psoptData->solution.get_controls_in_phase(1);
+	DMatrix x = psoptData->solution.get_states_in_phase  (1);
+	DMatrix t = psoptData->solution.get_time_in_phase    (1);
 
-	for (int i = 2; i <=problem.nphases;i++) {
-		u = u || solution.get_controls_in_phase(i);
-		x = x || solution.get_states_in_phase  (i);
-		t = t || solution.get_time_in_phase    (i);
+	for (int i = 2; i <= psoptData->problem.nphases;i++) {
+		u = u || psoptData->solution.get_controls_in_phase(i);
+		x = x || psoptData->solution.get_states_in_phase  (i);
+		t = t || psoptData->solution.get_time_in_phase    (i);
 	}
 	ResultVectors res;
 	res.t = t;
@@ -649,12 +658,12 @@ ResultVectors ModernPsoptInterface::getResults()
 vector<adouble> ModernPsoptInterface::getEndTimesOfPhases()
 {
 	vector<adouble> res;
-	for (int p=1;p<=problem.nphases;p++) {
-		DMatrix pt = solution.get_time_in_phase(p);
+	for (int p=1;p<=psoptData->problem.nphases;p++) {
+		DMatrix pt = psoptData->solution.get_time_in_phase(p);
 		res.push_back(pt(1, pt.GetNoCols()));
 	}
 	return res;
 }
 
 
-} // end namespace
+} /* namespace PsoptInterface */

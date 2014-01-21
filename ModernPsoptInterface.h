@@ -21,32 +21,33 @@
 
 #pragma once
 
-#include <Vector>
+#include <dmatrixv.h>
+#include <adolc/adouble.h>
+
+#include <vector>
 #include <functional>
+#include <memory>
 
-#include <psopt.h>
-
-
-namespace ModernPsoptInterfaceNamespace {
+namespace PsoptInterface {
 
 
-class ModernPsoptInterfaceException : public exception
+class PsoptInterfaceException : public exception
 {
 private:
 	string ex;
 public:
-	ModernPsoptInterfaceException(string s) { ex = s; }
+	PsoptInterfaceException(string s) { ex = s; }
 	const char * what () const throw ()	{ return ex.c_str(); }
 };
-class InputException : public ModernPsoptInterfaceException
+class InputException : public PsoptInterfaceException
 {
 public:
-	InputException(string s): ModernPsoptInterfaceException(s) {}
+	InputException(string s): PsoptInterfaceException(s) {}
 };
-class NoGuessException : public ModernPsoptInterfaceException
+class NoGuessException : public PsoptInterfaceException
 {
 public:
-	NoGuessException(string s): ModernPsoptInterfaceException(s) {}
+	NoGuessException(string s): PsoptInterfaceException(s) {}
 };
 
 struct AlgoConfigStruct
@@ -117,11 +118,12 @@ private:
 	std::function<adouble (adouble* states, adouble* controls, adouble* parameters,
 			adouble& time, adouble* xad, int iphase)>
 	integrandCostFunction;
-	Alg  algorithm;
-	Sol  solution;
-	Prob problem;
+
+	struct PsoptDatStruct;
+	unique_ptr<PsoptDatStruct> psoptData;
 
 	string nodesConfig;
+
 	struct StateStruct
 	{
 		double lowerBound; double upperBound;
@@ -220,6 +222,7 @@ public:
 	displayPaths = true;
 
 	ModernPsoptInterface();
+	~ModernPsoptInterface();
 
 	void SetDaeInitFunction(std::function<void (adouble* derivatives, adouble* path, adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase)> daeFunction);
 	void SetEventInitFunction(std::function<void (adouble* e, adouble* initial_states, adouble* final_states, adouble* parameters, adouble& t0, adouble& tf, adouble* xad, int iphase)> eventFunction);
