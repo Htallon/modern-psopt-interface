@@ -1,4 +1,5 @@
-/**
+/*! \file ModernPsoptInterface.cxx
+ *
  * This file is part of ModernPsoptInterface.
  *
  * Copyright 2014 Markus Sauermann
@@ -100,6 +101,11 @@ struct GuessStruct
 
 struct ResultVectors {DMatrix x; DMatrix u; DMatrix t;};
 
+/// A class providing a modern interface to PSOPT
+/**
+ * This class apstracts from some interlal workings of PSOPT to give the user a better
+ * handling.
+ */
 class ModernPsoptInterface
 {
 private:
@@ -107,33 +113,37 @@ private:
 	std::function<void (adouble* derivatives, adouble* path, adouble* states,
 			adouble* controls, adouble* parameters, adouble& time,
 			adouble* xad, int iphase)>
-		daeInitFunction;
+		daeInitFunction; //!< init function for the DAE calculation
 	std::function<void (adouble* e, adouble* initial_states, adouble* final_states,
 			adouble* parameters,adouble& t0, adouble& tf, adouble* xad, int iphase)>
-		eventInitFunction;
+		eventInitFunction; //!< init function for the event calculation
 	std::function<void (adouble* linkages, adouble* xad)> linkagesInitFunction;
 	std::function<adouble (adouble* initial_states, adouble* final_states,
 			adouble* parameters,adouble& t0, adouble& tf, adouble* xad, int iphase)>
-	endpointCostFunction;
+	endpointCostFunction; //!< function for calculation of the endpoint cost
 	std::function<adouble (adouble* states, adouble* controls, adouble* parameters,
 			adouble& time, adouble* xad, int iphase)>
-	integrandCostFunction;
+	integrandCostFunction; //!< function for the calculation of the cost of each phase
 
-	struct PsoptDataStruct;
-	unique_ptr<PsoptDataStruct> psoptData;
+	struct PsoptDataStruct; //!< dummy declaration for the PSOPT-internal data structures
+	unique_ptr<PsoptDataStruct> psoptData; //!< pointer to the PSOPT-internal data
 
-	string nodesConfig;
+	string nodesConfig; //!< configuration string for the nodes
 
+	/// Structure containing information about a state
+	/**
+	 * This structure holds all the necessary information about a single state in a single phase
+	 */
 	struct StateStruct
 	{
-		double lowerBound; double upperBound;
-		GuessStruct guess;
-		FunctionType functionType = FunNone;
-		std::function<adouble()> derivationFunctionNoArgs;
+		double lowerBound; //!< Lower bound of the state during this stage
+		double upperBound; //!< Upper bound of the state during this stage
+		GuessStruct guess; //!< Guess of the values of the state
+		FunctionType functionType = FunNone; //!< Type of function to calculate the derivation
+		std::function<adouble()> derivationFunctionNoArgs; //!< Derivation function without argments
 		std::function<adouble(adouble* states,
 				adouble* controls, adouble* parameters, adouble& time,
-				adouble* xad, int iphase)> derivationFunctionWithArgs;
-
+				adouble* xad, int iphase)> derivationFunctionWithArgs; //!< Derivation function with arguments
 	};
 	struct statePhaseStruct
 	{
@@ -208,23 +218,43 @@ private:
 	void Level2SetupPhase(int phase);
 	void Level3Setup();
 	void AlgoSetup(AlgoConfigStruct algoConfig);
+	/// Setup the relevant PSOPT Functions
+	/**
+	 *
+	 */
 	void FunctionSetup();
 	void prePsoptFunction();
 
 	DMatrix GuessToDMatrix(GuessStruct guess, int nodes);
 	void dae(adouble* derivatives, adouble* path, adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase);
 public:
-	bool display = true,
-	displayTimes = true,
-	displayStates = true,
-	displayControls = true,
-	displayEvents = true,
-	displayPaths = true;
+	bool display = true,    //!< \anchor display [in] Show debugging output during problem creation
+	displayTimes = true,    //!< [in] Show Times (requires \ref display to be true)
+	displayStates = true,   //!< [in] Show States (requires \ref display to be true)
+	displayControls = true, //!< [in] Show Controls (requires \ref display to be true)
+	displayEvents = true,   //!< [in] Show Events (requires \ref display to be true)
+	displayPaths = true;    //!< [in] Show Paths (requires \ref display to be true)
 
+	/// Constructor for the Interface.
 	ModernPsoptInterface();
+
+	/// Destructor for the Interface.
+	/**
+	 * 	Automatic deallocation of unique_ptr<PsoptDataStruct> psoptData.
+	 */
 	~ModernPsoptInterface();
 
-	void SetDaeInitFunction(std::function<void (adouble* derivatives, adouble* path, adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase)> daeFunction);
+	/// Set the init function for DAE.
+	/**
+	 * This is always called before the functions specified in CreateNewState,
+	 * AddStateDerivative and CreateNewPath.
+	 * @param daeFunction [in] a function to run at the beginning of a DAE calculation.
+	 * For a description of the arguments to daeFunction, refer to the PSOPT documentation.
+	 * This function should set the contents of derivatives and path according to the other values.
+	 */
+	void SetDaeInitFunction(std::function<void (
+			adouble* derivatives, //!< [out] derivatives the derivative of the states
+			adouble* path, adouble* states, adouble* controls, adouble* parameters, adouble& time, adouble* xad, int iphase)> daeFunction);
 	void SetEventInitFunction(std::function<void (adouble* e, adouble* initial_states, adouble* final_states, adouble* parameters, adouble& t0, adouble& tf, adouble* xad, int iphase)> eventFunction);
 	void SetLinkagesInitFunction(std::function<void (adouble* linkages, adouble* xad)> linkageFunction);
 	void SetEndpointCostFunction(std::function<adouble (adouble* initial_states, adouble* final_states, adouble* parameters,adouble& t0, adouble& tf, adouble* xad, int iphase)> ecFunction);
