@@ -119,8 +119,8 @@ private:
 			adouble& time, adouble* xad, int iphase)>
 	integrandCostFunction;
 
-	struct PsoptDatStruct;
-	unique_ptr<PsoptDatStruct> psoptData;
+	struct PsoptDataStruct;
+	unique_ptr<PsoptDataStruct> psoptData;
 
 	string nodesConfig;
 
