@@ -561,11 +561,12 @@ DMatrix ModernPsoptInterface::GuessToDMatrix(GuessStruct guess, int nodes)
 void ModernPsoptInterface::AlgoSetup(AlgoConfigStruct algoConfig)
 {
 	psoptData->algorithm.derivatives = algoConfig.derivatives;
+	psoptData->algorithm.mesh_refinement = algoConfig.mesh_refinement;
 	psoptData->algorithm.nlp_iter_max = algoConfig.nlpIterMax;
 	psoptData->algorithm.nlp_method = algoConfig.nlpMethod;
+	psoptData->algorithm.nlp_tolerance = algoConfig.nlpTolerance;
 	psoptData->algorithm.ode_tolerance = algoConfig.odeTolerance;
 	psoptData->algorithm.scaling = algoConfig.scaling;
-	psoptData->algorithm.nlp_tolerance = algoConfig.nlpTolerance;
 }
 void ModernPsoptInterface::FunctionSetup()
 {
