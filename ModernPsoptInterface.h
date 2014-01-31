@@ -280,6 +280,7 @@ public:
 	void plot_win(DMatrix& theta, DMatrix& r, string title, string xlabel, string ylabel, string legend, string terminal, string output, bool show = true);
 	ResultVectors getResults();
 	vector<adouble> getEndTimesOfPhases();
+	int getPhaseOfTime(adouble time);
 
 };
 

@@ -665,5 +665,24 @@ vector<adouble> ModernPsoptInterface::getEndTimesOfPhases()
 	return res;
 }
 
+int ModernPsoptInterface::getPhaseOfTime(adouble time)
+{
+	vector<adouble> endTimes = getEndTimesOfPhases();
+	//for (int phase = 1; phase <= endTimes.size();phase++) {
+	//	cout << "end of phase " << phase << " is " << endTimes[phase-1] << endl;
+	//}
+	if (time < 0) {
+		throw PsoptInterfaceException("Can not query stage of negative time");
+	}
+	int phase = 1;
+	while (time > endTimes[phase-1]) {
+		phase++;
+		if (phase > (int)endTimes.size()) {
+			throw PsoptInterfaceException("Can not query stage of a time past the ascent.");
+		}
+	}
+	//cout << phase << " " << time << endl;
+	return phase+1;
+}
 
 } /* namespace PsoptInterface */

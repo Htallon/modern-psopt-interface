@@ -14,6 +14,7 @@ install: libModernPsoptInterface.a
 
 libModernPsoptInterface.a: ModernPsoptInterface.o
 	ar rcs  $@ $^
+	ranlib $@
 
 projectclean:
 	rm -f libModernPsoptInterface.a
